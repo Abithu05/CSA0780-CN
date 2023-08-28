@@ -1,0 +1,51 @@
+#include <stdio.h>
+#include <string.h>
+
+// Generator polynomial (x^3 + x^2 + 1)
+const int generator = 0b1011; // Equivalent to 0x3
+
+// Perform CRC error detection
+int performCRC(int message, int generator) {
+    int messageBits = message << 3; // Shift the message to the left by 3 bits
+    int dividend = messageBits;
+    int divisor = generator;
+    int divisorBits = 0;
+
+    while (dividend >= generator) {
+        divisorBits = 0;
+        while ((divisor << divisorBits) <= dividend) {
+            divisorBits++;
+        }
+
+        dividend ^= (divisor << (divisorBits - 1));
+    }
+
+    return (messageBits | dividend);
+}
+
+int main() {
+    int message;
+    printf("Enter the message: ");
+    scanf("%d", &message);
+
+    int codeword = performCRC(message, generator);
+    printf("Codeword: %d\n", codeword);
+
+    // Simulate error by flipping a bit
+    int position;
+    printf("Enter the bit position to simulate error: ");
+    scanf("%d", &position);
+
+    int errorCodeword = codeword ^ (1 << position);
+    printf("Codeword with simulated error: %d\n", errorCodeword);
+
+    // Check if error occurred
+    int remainder = performCRC(errorCodeword, generator);
+    if (remainder == 0) {
+        printf("No error detected.\n");
+    } else {
+        printf("Error detected.\n");
+    }
+
+    return 0;
+}
